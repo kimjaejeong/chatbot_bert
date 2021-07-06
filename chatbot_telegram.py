@@ -1,8 +1,6 @@
 import telegram
 
 # Use this token to access the HTTP API:
-#1830582407:AAElfZrgBT637jcUT7LCJyIUBERYxHujuuc
-
 api_key = '1830582407:AAElfZrgBT637jcUT7LCJyxxxxxxx'
 chat_id = '17727xxxxxxx'
 bot = telegram.Bot(token = api_key)
