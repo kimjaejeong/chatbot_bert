@@ -2,8 +2,8 @@ import telegram
 from telegram.ext import Updater
 from telegram.ext import MessageHandler, Filters
 
-token = "1830582407:AAElfZrgBT637jcUT7LCJyIUBERYxHujuuc"
-id = "1772732703"
+token = "1830582407:AAElfZrgBT637jcUTxxxxxx"
+id = "177xxxxxxx"
 
 bot = telegram.Bot(token)
 bot.sendMessage(chat_id=id, text="테스트 중입니다.")

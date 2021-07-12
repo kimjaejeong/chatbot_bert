@@ -57,8 +57,8 @@ def covid_image_crawling(image_num=5):
 ####################################
 
 ######## 텔레그램 관련 코드 ########
-token = "1830582407:AAElfZrgBT637jcUT7LCJyIUBERYxHujuuc"
-id = "1772732703"
+token = "1830582407:AAElfZrgBT637jcUxxxxxxxx"
+id = "1772xxxxx"
 
 bot = telegram.Bot(token)
 info_message = '''- 오늘 확진자 수 확인 : "코로나" or "ㅋㄹㄴ" 입력
