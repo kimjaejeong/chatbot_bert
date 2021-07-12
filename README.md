@@ -23,3 +23,13 @@ chat_id 얻는 방법
   1. 파일명이 telegram 인지 확인
   2. pip uninstall wheel python-telegram-bot telegram
   3. pip install wheel python-telegram-bot telegram
+
+
+
+
+
+### 참고자료
+
+- https://py-son.tistory.com/8
+
+  ([챗봇] 파이썬 텔레그램 챗봇, 이것만 따라하면 20분 완성 (코로나 알리미 봇))
