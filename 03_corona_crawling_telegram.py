@@ -57,16 +57,16 @@ def covid_image_crawling(image_num=5):
 ####################################
 
 ######## 텔레그램 관련 코드 ########
-token = "1830582407:AAElfZrgBT637jcUxxxxxxxx"
-id = "1772xxxxx"
+api_key = "1830582407:AAElfZrgBT637jcUxxxxxxxx"
+chat_id = "1772xxxxx"
 
-bot = telegram.Bot(token)
+bot = telegram.Bot(api_key)
 info_message = '''- 오늘 확진자 수 확인 : "코로나" or "ㅋㄹㄴ" 입력
 - 코로나 관련 뉴스 : "뉴스" or "ㄴㅅ" 입력
 - 코로나 관련 이미지 : "이미지" or "ㅇㅁㅈ" 입력'''
-bot.sendMessage(chat_id=id, text=info_message)
+bot.sendMessage(chat_id=chat_id, text=info_message)
 
-updater = Updater(token=token, use_context=True)
+updater = Updater(token=api_key, use_context=True)
 dispatcher = updater.dispatcher
 updater.start_polling()
 
@@ -77,16 +77,16 @@ def handler(update, context):
     # 오늘 확진자 수 답장
     if (user_text == "코로나") or (user_text == "ㅋㄹㄴ"):
         covid_num = covid_num_crawling()
-        bot.send_message(chat_id=id, text="오늘 확진자 수 : {} 명".format(covid_num))
-        bot.sendMessage(chat_id=id, text=info_message)
+        bot.send_message(chat_id=chat_id, text="오늘 확진자 수 : {} 명".format(covid_num))
+        bot.sendMessage(chat_id=chat_id, text=info_message)
     # 코로나 관련 뉴스 답장
     elif (user_text == "뉴스") or (user_text == "ㄴㅅ"):
         covid_news = covid_news_crawling()
-        bot.send_message(chat_id=id, text=covid_news)
-        bot.sendMessage(chat_id=id, text=info_message)
+        bot.send_message(chat_id=chat_id, text=covid_news)
+        bot.sendMessage(chat_id=chat_id, text=info_message)
     # 코로나 관련 이미지 답장
     elif (user_text == "이미지") or (user_text == "ㅇㅁㅈ"):
-        bot.send_message(chat_id=id, text="최신 이미지 크롤링 중...")
+        bot.send_message(chat_id=chat_id, text="최신 이미지 크롤링 중...")
         covid_image_crawling(image_num=10)
         # 이미지 한장만 보내기
         # bot.send_photo(chat_id=id, photo=open("./코로나이미지/0.png", 'rb'))
@@ -94,8 +94,8 @@ def handler(update, context):
         photo_list = []
         for i in range(len(os.walk("./코로나이미지").__next__()[2])):  # 이미지 파일 개수만큼 for문 돌리기
             photo_list.append(telegram.InputMediaPhoto(open("./코로나이미지/{}.png".format(i), "rb")))
-        bot.sendMediaGroup(chat_id=id, media=photo_list)
-        bot.sendMessage(chat_id=id, text=info_message)
+        bot.sendMediaGroup(chat_id=chat_id, media=photo_list)
+        bot.sendMessage(chat_id=chat_id, text=info_message)
 
 
 echo_handler = MessageHandler(Filters.text, handler)

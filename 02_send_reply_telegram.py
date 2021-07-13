@@ -2,14 +2,15 @@ import telegram
 from telegram.ext import Updater
 from telegram.ext import MessageHandler, Filters
 
-token = "1830582407:AAElfZrgBT637jcUTxxxxxx"
-id = "177xxxxxxx"
+api_key = "1830582407:AAElfZrgBT637jcUTxxxxxx"
+chat_id = "177xxxxxxx"
 
-bot = telegram.Bot(token)
-bot.sendMessage(chat_id=id, text="테스트 중입니다.")
+
+bot = telegram.Bot(api_key)
+bot.sendMessage(chat_id=chat_id, text="테스트 중입니다.")
 
 # updater
-updater = Updater(token=token, use_context=True)
+updater = Updater(token=api_key, use_context=True)
 dispatcher = updater.dispatcher
 updater.start_polling()
 
@@ -19,11 +20,11 @@ updater.start_polling()
 def handler(update, context):
     user_text = update.message.text  # 사용자가 보낸 메세지를 user_text 변수에 저장합니다.
     if user_text == "안녕":  # 사용자가 보낸 메세지가 "안녕"이면?
-        bot.send_message(chat_id=id, text="어 그래 안녕")  # 답장 보내기
+        bot.send_message(chat_id=chat_id, text="어 그래 안녕")  # 답장 보내기
     elif user_text == "뭐해":  # 사용자가 보낸 메세지가 "뭐해"면?
-        bot.send_message(chat_id=id, text="그냥 있어")  # 답장 보내기
+        bot.send_message(chat_id=chat_id, text="그냥 있어")  # 답장 보내기
     else:
-        bot.send_message(chat_id=id, text="좋은 말 할 때, 다른거 입력해라!")
+        bot.send_message(chat_id=chat_id, text="좋은 말 할 때, 다른거 입력해라!")
 
 
 echo_handler = MessageHandler(Filters.text, handler)
