@@ -1,19 +1,18 @@
 import telegram
 from telegram.ext import Updater
 from telegram.ext import MessageHandler, Filters
-import urllib.request as req
-import os
 import boto3
 import pandas as pd
+import requests
 
-############# S3 연동 키 ############################
-AWS_ACCESS_KEY_ID = 'AKIATY67EXXXXXXXXXXX'
-AWS_ACCESS_KEY_SECRET = 'qzj1JFCdXVuZDER3XXXXXXXXXXX'
-region_name = 'ap-noXXXXXXXXXXX'
-
-############# 텔레그램 연동 키 ############################
-api_key = "1830582407:AAElfZrgBT637jcUxxxxxxxx"
-chat_id = "1772xxxxx"
+# ############# S3 연동 키 ############################
+# AWS_ACCESS_KEY_ID = 'AKIATY67EXXXXXXXXXXX'
+# AWS_ACCESS_KEY_SECRET = 'qzj1JFCdXVuZDER3XXXXXXXXXXX'
+# region_name = 'ap-noXXXXXXXXXXX'
+#
+# ############# 텔레그램 연동 키 ############################
+# api_key = "1830582407:AAElfZrgBT637jcUxxxxxxxx"
+# chat_id = "1772xxxxx"
 
 # S3 버킷에 있는 데이터 불러오기
 def load_data_s3():
@@ -28,13 +27,16 @@ def load_data_s3():
 
     return grid_sizes
 
-def news_qa_analysis(sentence):
+def news_qa_analysis(question, original_news_data):
 
-    url = "API URL 입력"
+    url = "http://172.16.50.4:9000/qa_analysis"
 
-    summary_sentence = ""
+    payload = {'question': question,
+               'original_news_data': original_news_data,
+               }
+    summary_sentence = requests.request("POST", url, data=payload)
 
-    return summary_sentence
+    return summary_sentence.text
 
 ### 챗봇 답장
 def handler(update, context):
@@ -49,12 +51,21 @@ def handler(update, context):
         bot.send_message(chat_id=chat_id, text=top1_df.TITLE.iloc[0] + '\n\n' + AI_message + '\n\n' + top1_df.URL.iloc[0])
         bot.send_message(chat_id=chat_id, text="해당 뉴스에서 궁금한 사항이 있으면 입력해주세요." + "없으면 '종료'를 입력해주세요")
 
-        user2_text = update.message.text  # 사용자가 보낸 메세지를 user_text 변수에 저장합니다.
-        while (user2_text != "없음"):
-            # API 연계 관련 내용
-            summary_sentence = news_qa_analysis(top1_df.TITLE.iloc[0])
-            bot.send_message(chat_id=chat_id, text=summary_sentence)
-        bot.send_message(chat_id=chat_id, text="많이 애용해주세요. 감사합니다^^")
+        summary_sentence = news_qa_analysis("광주광역시가 7월 1일에 시행하는 것은?", top1_df.CONTENT.iloc[0])  # question, original_news_data
+        bot.send_message(chat_id=chat_id, text=summary_sentence)
+
+        # user2_text = update.message.text  # 사용자가 보낸 메세지를 user_text 변수에 저장합니다.
+        # if (user2_text == "종료"):
+        #     bot.send_message(chat_id=chat_id, text="많이 애용해주세요. 감사합니다^^")
+        # else:
+        #     summary_sentence = news_qa_analysis(user_text, top1_df.CONTENT.iloc[0])  # question, original_news_data
+        #     bot.send_message(chat_id=chat_id, text=summary_sentence)
+
+
+    elif (user_text == "사회"):
+        bot.send_message(chat_id=chat_id, text="서비스 준비 중입니다.")
+    elif (user_text == "생활"):
+        bot.send_message(chat_id=chat_id, text="서비스 준비 중입니다.")
     else:
         bot.send_message(chat_id=chat_id, text="해당 카테고리는 존재하지 않습니다.")
 
