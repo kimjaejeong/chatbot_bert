@@ -4,15 +4,19 @@ from telegram.ext import MessageHandler, Filters
 import boto3
 import pandas as pd
 import requests
+from datetime import datetime
+import pytz
+import sqlite3
 
-# ############# S3 연동 키 ############################
-# AWS_ACCESS_KEY_ID = 'AKIATY67EXXXXXXXXXXX'
-# AWS_ACCESS_KEY_SECRET = 'qzj1JFCdXVuZDER3XXXXXXXXXXX'
-# region_name = 'ap-noXXXXXXXXXXX'
-#
-# ############# 텔레그램 연동 키 ############################
-# api_key = "1830582407:AAElfZrgBT637jcUxxxxxxxx"
-# chat_id = "1772xxxxx"
+
+############# S3 연동 키 ############################
+AWS_ACCESS_KEY_ID = 'AKIATY67EXXXXXXXXXXX'
+AWS_ACCESS_KEY_SECRET = 'qzj1JFCdXVuZDER3XXXXXXXXXXX'
+region_name = 'ap-noXXXXXXXXXXX'
+
+############# 텔레그램 연동 키 ############################
+api_key = "1830582407:AAElfZrgBT637jcUxxxxxxxx"
+chat_id = "1772xxxxx"
 
 # S3 버킷에 있는 데이터 불러오기
 def load_data_s3():
@@ -27,6 +31,7 @@ def load_data_s3():
 
     return grid_sizes
 
+# news_qa API 호출
 def news_qa_analysis(question, original_news_data):
 
     url = "http://172.16.50.4:9000/qa_analysis"
@@ -38,6 +43,41 @@ def news_qa_analysis(question, original_news_data):
 
     return summary_sentence.text
 
+##################### 후에 class로 변환 ####################################
+# sqlite3 활용
+def select_db():
+    con = sqlite3.connect('example.db')
+    cur = con.cursor()
+    
+    # 추후 코드 변경
+    for row in cur.execute('SELECT * FROM news ORDER BY DATE DESC'):
+        return row[1] # original_news_data만 추출
+
+def insert_db(original_news_data):
+    con = sqlite3.connect('example.db')
+    cur = con.cursor()
+
+    date = datetime.now(pytz.timezone('Asia/Seoul')).strftime("%Y%m%d%H%M%S")
+
+    # 테이블 존재하지 않으면 생성
+    cur.execute("CREATE TABLE IF NOT EXISTS news(DATE text PRIMARY KEY, CONTENT text)")  # AUTOINCREMENT
+
+    # 데이터 삽입
+    cur.execute("INSERT INTO news (DATE,CONTENT) VALUES(?,?)", (date, original_news_data))
+
+    con.commit()
+
+def delete_db():
+    con = sqlite3.connect('example.db')
+    cur = con.cursor()
+
+    cur.execute("DELETE FROM news").rowcount
+
+    con.commit()
+
+######################################################################################
+
+
 ### 챗봇 답장
 def handler(update, context):
     user_text = update.message.text  # 사용자가 보낸 메세지를 user_text 변수에 저장합니다.
@@ -46,28 +86,38 @@ def handler(update, context):
     if (user_text == "경제"):
         grid_sizes = load_data_s3()
         dropna_grid_sizes = grid_sizes[grid_sizes.CONTENT.notnull()]
-        top1_df = dropna_grid_sizes.sort_values("WRITEDATE", ascending = False).head(1)
+        top1_df = dropna_grid_sizes.sort_values("WRITEDATE", ascending = False).iloc[0,:]
         AI_message = "AI 분석 요약 : " + "경제 관련 된 이야기입니다."
-        bot.send_message(chat_id=chat_id, text=top1_df.TITLE.iloc[0] + '\n\n' + AI_message + '\n\n' + top1_df.URL.iloc[0])
+        bot.send_message(chat_id=chat_id, text=top1_df.TITLE + '\n\n' + AI_message + '\n\n' + top1_df.URL)
         bot.send_message(chat_id=chat_id, text="해당 뉴스에서 궁금한 사항이 있으면 입력해주세요." + "없으면 '종료'를 입력해주세요")
 
-        summary_sentence = news_qa_analysis("광주광역시가 7월 1일에 시행하는 것은?", top1_df.CONTENT.iloc[0])  # question, original_news_data
-        bot.send_message(chat_id=chat_id, text=summary_sentence)
-
-        # user2_text = update.message.text  # 사용자가 보낸 메세지를 user_text 변수에 저장합니다.
-        # if (user2_text == "종료"):
-        #     bot.send_message(chat_id=chat_id, text="많이 애용해주세요. 감사합니다^^")
-        # else:
-        #     summary_sentence = news_qa_analysis(user_text, top1_df.CONTENT.iloc[0])  # question, original_news_data
-        #     bot.send_message(chat_id=chat_id, text=summary_sentence)
-
+        # 경제 관련 DB 저장 - original_news_data / date
+        insert_db(top1_df.CONTENT)
 
     elif (user_text == "사회"):
-        bot.send_message(chat_id=chat_id, text="서비스 준비 중입니다.")
+        grid_sizes = load_data_s3()
+        dropna_grid_sizes = grid_sizes[grid_sizes.CONTENT.notnull()]
+        top2_df = dropna_grid_sizes.sort_values("WRITEDATE", ascending=False).iloc[1,:]
+        AI_message = "AI 분석 요약 : " + "사회 관련 된 이야기입니다."
+        bot.send_message(chat_id=chat_id, text=top2_df.TITLE + '\n\n' + AI_message + '\n\n' + top2_df.URL)
+        bot.send_message(chat_id=chat_id, text="해당 뉴스에서 궁금한 사항이 있으면 입력해주세요." + "없으면 '종료'를 입력해주세요")
+        
+        # 사회 관련 DB 저장 - original_news_data / date
+        insert_db(top2_df.CONTENT)
+
     elif (user_text == "생활"):
         bot.send_message(chat_id=chat_id, text="서비스 준비 중입니다.")
-    else:
-        bot.send_message(chat_id=chat_id, text="해당 카테고리는 존재하지 않습니다.")
+    elif (user_text == "종료"):
+        # athena DB 내용 삭제
+        delete_db()
+        bot.send_message(chat_id=chat_id, text="다른 카테고리가 궁금하시면 입력해주세요.")
+        pass
+    else: # 질문 관련 내용
+        # DB에서 내용 최신 순으로 조회 후, news_qa analysis에 호출
+        #// 아무것도 없을 때 exceptio 처리 해야 함.
+        original_news_data = select_db()
+        summary_sentence = news_qa_analysis(user_text, original_news_data)  # 예시: 광주광역시가 7월 1일에 시행하는 것은?
+        bot.send_message(chat_id=chat_id, text=summary_sentence)
 
 if __name__ == "__main__":
     bot = telegram.Bot(api_key)
