@@ -26,7 +26,8 @@ def load_data_s3():
     for bucket in resource.buckets.all():
         bucket_name = bucket.name
     # obj = client.get_object(Bucket=bucket_name, Key='test.csv')
-    obj = client.get_object(Bucket=bucket_name, Key='news_articles.csv')
+    # obj = client.get_object(Bucket=bucket_name, Key='news_articles.csv')
+    obj = client.get_object(Bucket=bucket_name, Key='news_articles_bin3.csv')
     grid_sizes = pd.read_csv(obj['Body'])
 
     return grid_sizes
@@ -39,9 +40,9 @@ def news_qa_analysis(question, original_news_data):
     payload = {'question': question,
                'original_news_data': original_news_data,
                }
-    summary_sentence = requests.request("POST", url, data=payload)
+    answer_sentence = requests.request("POST", url, data=payload)
 
-    return summary_sentence.text
+    return answer_sentence.text
 
 ##################### 후에 class로 변환 ####################################
 # sqlite3 활용
@@ -83,45 +84,34 @@ def handler(update, context):
     user_text = update.message.text  # 사용자가 보낸 메세지를 user_text 변수에 저장합니다.
     
     # 경제 내용 요약
-    if (user_text == "경제"):
+    if (user_text in ["경제", "IT/과학", "정치", "사회", "생활/문화", "스포츠"]):
+        bot.send_message(chat_id=chat_id, text= user_text + " 관련 따끈따끈한 최신 뉴스 전달 드립니다^^")
+        # 해당 뉴스 불러오기
         grid_sizes = load_data_s3()
         dropna_grid_sizes = grid_sizes[grid_sizes.CONTENT.notnull()]
-        top1_df = dropna_grid_sizes.sort_values("WRITEDATE", ascending = False).iloc[0,:]
-        AI_message = "AI 분석 요약 : " + "경제 관련 된 이야기입니다."
-        bot.send_message(chat_id=chat_id, text=top1_df.TITLE + '\n\n' + AI_message + '\n\n' + top1_df.URL)
+        top1_df = dropna_grid_sizes[dropna_grid_sizes.CATEGORY == user_text].sort_values("WRITEDATE", ascending=False).head(1)
+        AI_message = "AI 분석 요약 : \n" + top1_df.SUMMARY_CONTENT.iloc[0]
+        bot.send_message(chat_id=chat_id, text=top1_df.TITLE.iloc[0] + '\n\n' + AI_message + '\n\n' + top1_df.URL.iloc[0])
         bot.send_message(chat_id=chat_id, text="해당 뉴스에서 궁금한 사항이 있으면 입력해주세요." + "없으면 '종료'를 입력해주세요")
 
-        # 경제 관련 DB 저장 - original_news_data / date
-        insert_db(top1_df.CONTENT)
-
-    elif (user_text == "사회"):
-        grid_sizes = load_data_s3()
-        dropna_grid_sizes = grid_sizes[grid_sizes.CONTENT.notnull()]
-        top2_df = dropna_grid_sizes.sort_values("WRITEDATE", ascending=False).iloc[1,:]
-        AI_message = "AI 분석 요약 : " + "사회 관련 된 이야기입니다."
-        bot.send_message(chat_id=chat_id, text=top2_df.TITLE + '\n\n' + AI_message + '\n\n' + top2_df.URL)
-        bot.send_message(chat_id=chat_id, text="해당 뉴스에서 궁금한 사항이 있으면 입력해주세요." + "없으면 '종료'를 입력해주세요")
+        # 해당 관련 DB 저장 - original_news_data / date
+        insert_db(top1_df.CONTENT.iloc[0])
         
-        # 사회 관련 DB 저장 - original_news_data / date
-        insert_db(top2_df.CONTENT)
-
-    elif (user_text == "생활"):
-        bot.send_message(chat_id=chat_id, text="서비스 준비 중입니다.")
     elif (user_text == "종료"):
         # athena DB 내용 삭제
         delete_db()
-        bot.send_message(chat_id=chat_id, text="다른 카테고리가 궁금하시면 입력해주세요.")
-        pass
+        bot.send_message(chat_id=chat_id, text="다른 카테고리가 궁금하시면 입력해주세요.\n" + '''"경제", "IT/과학", "정치", "사회", "생활/문화", "스포츠"''')
+    
     else: # 질문 관련 내용
         # DB에서 내용 최신 순으로 조회 후, news_qa analysis에 호출
         #// 아무것도 없을 때 exceptio 처리 해야 함.
         original_news_data = select_db()
-        summary_sentence = news_qa_analysis(user_text, original_news_data)  # 예시: 광주광역시가 7월 1일에 시행하는 것은?
-        bot.send_message(chat_id=chat_id, text=summary_sentence)
+        answer_sentence = news_qa_analysis(user_text, original_news_data)  # 예시: 광주광역시가 7월 1일에 시행하는 것은?
+        bot.send_message(chat_id=chat_id, text=answer_sentence)
 
 if __name__ == "__main__":
     bot = telegram.Bot(api_key)
-    info_message = '''- 원하는 뉴스 카테고리 입력 : '"스포츠", "사회", "정치", "경제", "생활/문화", "IT/과학"'''
+    info_message = '''- 원하는 뉴스 카테고리 입력 : '"경제", "IT/과학", "정치", "사회", "생활/문화", "스포츠"'''
     bot.sendMessage(chat_id=chat_id, text=info_message)
 
     updater = Updater(token=api_key, use_context=True)
