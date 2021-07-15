@@ -8,16 +8,6 @@ from datetime import datetime
 import pytz
 import sqlite3
 
-########S3 연동 키##############
-# Windows - CMD: aws configure
-AWS_ACCESS_KEY_ID = 'AKIATY67E6HIOJCTX5WN'
-AWS_ACCESS_KEY_SECRET = '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'
-region_name = 'ap-northeast-2'
-
-########텔레그램 연동 키##############
-api_key = '1830582407:AAElfZrgBT637jcUT7LCJyIUBERYxHujuuc'
-chat_id = '1772732703'
-
 
 # ############# S3 연동 키 ############################
 # AWS_ACCESS_KEY_ID = 'AKIATY67EXXXXXXXXXXX'
