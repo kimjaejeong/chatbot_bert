@@ -51,6 +51,49 @@ step3) 불러온 데이터를 input 값으로 활용, API 호출 시 결과 도�
 
 
 
+### [구동 방법]
+
+**사전 작업**
+
+- Pororo 설치 및 사용법 확인
+
+- Telegram 설치 및 파이썬 연동
+
+- Sqlite3 설치 및 파이썬 연동
+- S3 IAM 계정 생성 및 데이터 확보 후 csv 파일 저장
+- Django 세팅
+
+**실행 순서**
+
+1. EC2기반 Pororo API 웹 서버 실행
+
+   - https://github.com/kimjaejeong/pororoAPI/tree/main/pororo_api
+
+   ```python
+   python3 manage.py runserver 0.0.0.0:9000
+   ```
+
+2. 챗봇 실행
+
+   - news_bot_AI.py 실행
+
+##### 파일구조
+
+- news_bot_AI.py
+  - 메인 실행 소스
+
+- s3_exercise 폴더
+
+  - s3, python 연동
+
+- telegram_exercise 폴더
+
+  01) telegram reply 연습
+
+  02) telgram send & reply 연습
+
+  03) news data 크롤링 연습 
+
 
 
 ### [결과(텔레그램 캡처)]
