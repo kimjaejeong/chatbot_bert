@@ -15,20 +15,23 @@
 
 - 뉴스 신문기사
 
+### [개발 기간]
 
+- 21.07.10 ~ 21.07.15
+- 개인 프로젝트
 
 ### [**기술셋**]
 
 1. 인공지능 모형 개발(뉴스 카테고리 분류/뉴스 내용 요약/뉴스 QA)
    - Pororo 라이브러리
    - Pytorch
-   - python-mecab-ko
+   - Python-mecab-ko
    - cudatoolkit
 
 2. 텔레그램 연동
 
    - DB sqlite3
-   - AWS S3
+   - AWS S3(boto3)
 
 3. API 개발
 
@@ -40,7 +43,7 @@
 
 ### [**아키텍처**]
 
-아키텍처 사진 추가
+![chatbot_architecture](https://user-images.githubusercontent.com/47164355/125904683-7d46a0aa-077b-42ae-8a2a-c890586cfb34.PNG)
 
 
 
@@ -188,3 +191,10 @@ step3) 불러온 데이터를 input 값으로 활용, API 호출 시 결과 도�
 - https://iamthejiheee.tistory.com/47
 
   (sqlite3 문법정리 굿)
+
+**github**
+
+- https://cutemoomin.tistory.com/entry/Readme-%ED%8C%8C%EC%9D%BC%EC%97%90-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%84%A3%EA%B8%B0-%EB%A7%88%ED%81%AC%EB%8B%A4%EC%9A%B4-%EC%9D%B4%EB%AF%B8%EC%A7%80
+
+  (이미지 업로드 방법)
+
