@@ -106,8 +106,8 @@ step3) 불러온 데이터를 input 값으로 활용, API 호출 시 결과 도�
 
 ### [결과(텔레그램 캡처)]
 
-![result1](https://user-images.githubusercontent.com/47164355/127099586-0126e153-00c6-4339-ab34-60e69d59c2ac.jpg)
-![result2](https://user-images.githubusercontent.com/47164355/127099592-09ba8116-7570-4e65-b97d-22b44dc9d374.jpg)
+![ai_result1](https://user-images.githubusercontent.com/47164355/127100372-e6d1664c-ef56-46f8-a847-b841d0fd0a74.PNG)
+![ai_result2](https://user-images.githubusercontent.com/47164355/127100377-fb73afae-3750-4739-aab9-d249ce879791.PNG)
 
 
 
