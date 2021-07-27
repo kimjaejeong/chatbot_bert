@@ -14,20 +14,23 @@ import sqlite3
 # AWS_ACCESS_KEY_SECRET = 'qzj1JFCdXVuZDER3XXXXXXXXXXX'
 # region_name = 'ap-noXXXXXXXXXXX'
 #
-# ############# 텔레그램 연동 키 ############################
-# api_key = "1830582407:AAElfZrgBT637jcUxxxxxxxx"
-# chat_id = "1772xxxxx"
+########텔레그램 연동 키##############
+api_key = ''
+chat_id = ''
 
 # S3 버킷에 있는 데이터 불러오기
 def load_data_s3():
     client = boto3.client('s3')  # low-level functional API
     resource = boto3.resource('s3')  # high-level object-oriented API
 
-    for bucket in resource.buckets.all():
-        bucket_name = bucket.name
+    # for bucket in resource.buckets.all():
+    #     bucket_name = bucket.name
+    bucket_name = 'kb-bucket-test-01'
+    file_name = 'naver_news_multi_tuning.csv'
     # obj = client.get_object(Bucket=bucket_name, Key='test.csv')
     # obj = client.get_object(Bucket=bucket_name, Key='news_articles.csv')
-    obj = client.get_object(Bucket=bucket_name, Key='news_articles_bin3.csv')
+    # obj = client.get_object(Bucket=bucket_name, Key='news_articles_bin3.csv')
+    obj = client.get_object(Bucket=bucket_name, Key=file_name)
     grid_sizes = pd.read_csv(obj['Body'])
 
     return grid_sizes
@@ -93,16 +96,21 @@ def handler(update, context):
         bot.send_message(chat_id=chat_id, text= user_text + " 관련 최신 뉴스 전달 드립니다\n" + "(AI가 {} 기사로 분류했습니다.)".format(user_text))
         # 해당 뉴스 불러오기
         grid_sizes = load_data_s3()
-        dropna_grid_sizes = grid_sizes[grid_sizes.CONTENT.notnull()]
-        top1_df = dropna_grid_sizes[dropna_grid_sizes.CATEGORY == user_text].sort_values("WRITEDATE", ascending=False).head(1)
-        title_message = "[뉴스 제목] \n" + top1_df.TITLE.iloc[0]
-        url_message = top1_df.URL.iloc[0]
+        # dropna_grid_sizes = grid_sizes[grid_sizes.CONTENT.notnull()]
+        dropna_grid_sizes = grid_sizes[grid_sizes.content.notnull()]
+        # top1_df = dropna_grid_sizes[dropna_grid_sizes.CATEGORY == user_text].sort_values("WRITEDATE", ascending=False).head(1)
+        top1_df = dropna_grid_sizes[dropna_grid_sizes.CATEGORY == user_text].head(1)
+        # title_message = "[뉴스 제목] \n" + top1_df.TITLE.iloc[0]
+        title_message = "[뉴스 제목] \n" + top1_df.title.iloc[0]
+        # url_message = top1_df.URL.iloc[0]
+        url_message = top1_df.url.iloc[0]
         AI_message = "[AI 분석 요약] \n" + " " + top1_df.SUMMARY_CONTENT.iloc[0]
         bot.send_message(chat_id=chat_id, text=title_message + '\n\n' + AI_message + '\n\n' + url_message)
         bot.send_message(chat_id=chat_id, text="해당 뉴스에서 궁금한 사항이 있으면 입력해주세요." + "\n없으면 '종료'를 입력해주세요")
 
         # 해당 관련 DB 저장 - original_news_data / date
-        insert_db(top1_df.CONTENT.iloc[0])
+        # insert_db(top1_df.CONTENT.iloc[0])
+        insert_db(top1_df.content.iloc[0])
         
     elif (user_text == "종료"):
         # athena DB 내용 삭제
